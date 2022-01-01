@@ -22,6 +22,26 @@ if (navigator.geolocation) {
       //   const longitude = position.coords.longitude;
       const { latitude, longitude } = position.coords;
       console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+
+      //* Displaying Map :
+      const coords = [latitude, longitude];
+      //? wheter string in the map() function like "map" refers to ID name of an element innerHTML whitin the map will be diplayed.
+      //? coords refer to the coordinates of position given, and it expects an array as an argument,the "13" refers to the zoom depth.
+      //? "L" is an object given by Leaflet wich includes some methods as tileLayer(),map(),marker(),...
+      const map = L.map("map").setView(coords, 13);
+
+      //? Used to load and display tile layers on the map. Note that most tile servers require attribution, which you can set under Layer. Extends GridLayer.
+      L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+
+      //* Displaying a map Marker :
+      //? L.Marker is used to display clickable/draggable icons on the map. Extends Layer.
+      L.marker(coords)
+        .addTo(map)
+        .bindPopup("A pretty CSS3 popup.<br> Easily customizable.")
+        .openPopup();
     },
     function () {
       console.log("Couldn't get your position !!");
