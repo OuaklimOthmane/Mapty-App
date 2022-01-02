@@ -12,6 +12,100 @@ const inputDuration = document.querySelector(".form__input--duration");
 const inputCadence = document.querySelector(".form__input--cadence");
 const inputElevation = document.querySelector(".form__input--elevation");
 
+//! REFACTORING FOR PROJECT ARCHITECTURE :
+
+class App {
+  #map;
+  #mapEvent;
+
+  constructor() {
+    // When a new object is created after the page has loaded,so that means the constructor is also executed immediately when the page is loaded, so therefore is simply getting "_getPosition()" in constructor.
+    // so the Load page has triggered the constructor which he then triggers "_getPosition()", so as we receive the position the "_loadMap(position)" will called.
+    this._getPosition();
+
+    // "this._newWorkout()" is an event handler function has the "this" keyword is pointed to the "form" element and no longer the "app" object, so once again we will use the "bind" solution.
+    form.addEventListener("submit", this._newWorkout.bind(this));
+
+    inputType.addEventListener("change", this._toggleElevationField);
+  }
+
+  _getPosition() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        // the "_loadMap()" method is actually called by ".getCurrentPosition()" function,and it will be treated as a regular function not a method call, so when it's a regular function then the "this" keyword will set to "undefined",therefore as a solution we use "bind()" method to set manually the "this" keyword to the "this" wich points to the current object,and we know that "bind()" will simply return a new function and that's what we need inside the ".getCurrentPosition()"
+        this._loadMap.bind(this),
+        function () {
+          alert("Couldn't get your position !!");
+        }
+      );
+    }
+  }
+
+  _loadMap(position) {
+    //* Display the map :
+    const { latitude, longitude } = position.coords;
+    const coords = [latitude, longitude];
+
+    this.#map = L.map("map").setView(coords, 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(this.#map);
+
+    //* Show the form :
+    this.#map.on("click", this._showForm.bind(this));
+  }
+
+  _showForm(mapE) {
+    this.#mapEvent = mapE;
+    form.classList.remove("hidden");
+    inputDistance.focus();
+  }
+
+  _toggleElevationField() {
+    inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
+    inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
+  }
+
+  _newWorkout(event) {
+    event.preventDefault();
+
+    //* Clear input fields :
+    inputDistance.value =
+      inputDuration.value =
+      inputCadence.value =
+      inputElevation.value =
+        "";
+
+    //* Display marker :
+    const { lat, lng } = this.#mapEvent.latlng;
+
+    L.marker([lat, lng])
+      .addTo(this.#map)
+      .bindPopup(
+        L.popup({
+          maxWidth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: "running-popup",
+        })
+      )
+      .setPopupContent("othmane")
+      .openPopup();
+  }
+}
+
+const app = new App();
+
+//! ____________________________________________________________________________________________________________________
+//? ____________________________________________________________________________________________________________________
+//* ____________________________________________________________________________________________________________________
+
+//! REFACTORING ON FUNCTIONNAL PROGRAMMING :
+
+/* 
 let map, mapEvent;
 
 //! Setting the map :
@@ -29,7 +123,7 @@ if (navigator.geolocation) {
       //* Displaying the Map :
       const coords = [latitude, longitude];
 
-      //? wheter string in the map() function like "map" refers to ID name of an element innerHTML whitin the map will be diplayed.
+      //? whither string in the map() function like "map" refers to ID name of an element innerHTML whitin the map will be diplayed.
       //? coords refer to the coordinates of position given, and it expects an array as an argument,the "13" refers to the zoom depth.
       //? "L" is an object given by Leaflet wich includes some methods as tileLayer(),map(),marker(),...
 
@@ -93,3 +187,4 @@ inputType.addEventListener("change", function () {
   inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
   inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
 });
+ */
