@@ -3,15 +3,6 @@
 // prettier-ignore
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-//! ELEMENTS :
-const form = document.querySelector(".form");
-const containerWorkouts = document.querySelector(".workouts");
-const inputType = document.querySelector(".form__input--type");
-const inputDistance = document.querySelector(".form__input--distance");
-const inputDuration = document.querySelector(".form__input--duration");
-const inputCadence = document.querySelector(".form__input--cadence");
-const inputElevation = document.querySelector(".form__input--elevation");
-
 //! REFACTORING FOR PROJECT ARCHITECTURE :
 
 class Workout {
@@ -52,11 +43,25 @@ class Cycling extends Workout {
   }
 }
 
+//! ELEMENTS :
+const form = document.querySelector(".form");
+const containerWorkouts = document.querySelector(".workouts");
+const inputType = document.querySelector(".form__input--type");
+const inputDistance = document.querySelector(".form__input--distance");
+const inputDuration = document.querySelector(".form__input--duration");
+const inputCadence = document.querySelector(".form__input--cadence");
+const inputElevation = document.querySelector(".form__input--elevation");
+
+//! APPLICATION ARCHITECTURE :
+
 class App {
   #map;
   #mapEvent;
+  #workouts = [];
 
   constructor() {
+    // this.workouts = [];
+
     // When a new object is created after the page has loaded,so that means the constructor is also executed immediately when the page is loaded, so therefore is simply getting "_getPosition()" in constructor.
     // so the Load page has triggered the constructor which he then triggers "_getPosition()", so as we receive the position the "_loadMap(position)" will called.
     this._getPosition();
@@ -107,18 +112,54 @@ class App {
   }
 
   _newWorkout(event) {
+    const validInputs = (...inputs) =>
+      inputs.every((input) => Number.isFinite(input));
+
+    const allPositive = (...inputs) => inputs.every((input) => input > 0);
+
     event.preventDefault();
 
-    //* Clear input fields :
-    inputDistance.value =
-      inputDuration.value =
-      inputCadence.value =
-      inputElevation.value =
-        "";
-
-    //* Display marker :
+    //* Get Data from Form :
+    const type = inputType.value;
+    const distance = +inputDistance.value;
+    const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
+    let workout;
 
+    //* If workout "running", create running object :
+    if (type === "running") {
+      const cadence = +inputCadence.value;
+      // Checking the data validation :
+      if (
+        //. !Number.isFinite(distance) ||
+        //. !Number.isFinite(duration) ||
+        //. !Number.isFinite(cadence)
+        !validInputs(distance, duration, cadence) ||
+        !allPositive(distance, duration, cadence)
+      )
+        return alert("Inputs have to be positive numbers !");
+
+      workout = new Running([lat, lng], distance, duration, cadence);
+      this.#workouts.push(workout);
+    }
+
+    //* If workout "cycling", create cycling object :
+    if (type === "cycling") {
+      const elevation = +inputElevation.value;
+      // Checking the data validation :
+      if (
+        !validInputs(distance, duration, elevation) ||
+        !allPositive(distance, duration)
+      )
+        return alert("Inputs have to be positive numbers !");
+
+      workout = new Cycling([lat, lng], distance, duration, elevation);
+      this.#workouts.push(workout);
+    }
+
+    //* Add new object to workout array :
+
+    //* Render workout on map as a marker :
     L.marker([lat, lng])
       .addTo(this.#map)
       .bindPopup(
@@ -132,6 +173,15 @@ class App {
       )
       .setPopupContent("othmane")
       .openPopup();
+
+    //* Render workout on list :
+
+    //* Hide form & Clear input fields :
+    inputDistance.value =
+      inputDuration.value =
+      inputCadence.value =
+      inputElevation.value =
+        "";
   }
 }
 
