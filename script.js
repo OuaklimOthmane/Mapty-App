@@ -69,6 +69,7 @@ const inputElevation = document.querySelector(".form__input--elevation");
 class App {
   #map;
   #mapEvent;
+  #mapZoomLevel = 13;
   #workouts = [];
 
   constructor() {
@@ -80,6 +81,8 @@ class App {
     form.addEventListener("submit", this._newWorkout.bind(this));
 
     inputType.addEventListener("change", this._toggleElevationField);
+
+    containerWorkouts.addEventListener("click", this._moveToPopup.bind(this));
   }
 
   _getPosition() {
@@ -99,7 +102,7 @@ class App {
     const { latitude, longitude } = position.coords;
     const coords = [latitude, longitude];
 
-    this.#map = L.map("map").setView(coords, 13);
+    this.#map = L.map("map").setView(coords, this.#mapZoomLevel);
 
     L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
       attribution:
@@ -214,7 +217,7 @@ class App {
 
   _renderWorkoutList(workout) {
     let html = `
-    <li class="workout workout--${workout.type}" data-id="1234567890">
+    <li class="workout workout--${workout.type}" data-id=${workout.id}>
       <h2 class="workout__title">${workout.description}</h2>
         <div class="workout__details">
           <span class="workout__icon">${
@@ -260,6 +263,23 @@ class App {
     }
 
     form.insertAdjacentHTML("afterend", html);
+  }
+
+  _moveToPopup(event) {
+    // Using event delegation :
+    const workoutElement = event.target.closest(".workout");
+    if (!workoutElement) return;
+    // getting the workout object inside the workouts array based on the data-id,so we can after use this object to get the coordinates.
+    const workout = this.#workouts.find(
+      (work) => work.id === workoutElement.dataset.id
+    );
+
+    this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
   }
 }
 
