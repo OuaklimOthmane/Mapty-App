@@ -17,6 +17,8 @@ class Workout {
 }
 
 class Running extends Workout {
+  type = "running";
+
   constructor(coords, distance, duration, cadence) {
     super(coords, distance, duration);
     this.cadence = cadence;
@@ -30,9 +32,12 @@ class Running extends Workout {
   }
 }
 class Cycling extends Workout {
+  type = "cycling";
+
   constructor(coords, distance, duration, elevationGain) {
     super(coords, distance, duration);
     this.elevationGain = elevationGain;
+    // this.type = "cycling";
     this.calcSpeed();
   }
 
@@ -60,8 +65,6 @@ class App {
   #workouts = [];
 
   constructor() {
-    // this.workouts = [];
-
     // When a new object is created after the page has loaded,so that means the constructor is also executed immediately when the page is loaded, so therefore is simply getting "_getPosition()" in constructor.
     // so the Load page has triggered the constructor which he then triggers "_getPosition()", so as we receive the position the "_loadMap(position)" will called.
     this._getPosition();
@@ -160,19 +163,8 @@ class App {
     //* Add new object to workout array :
 
     //* Render workout on map as a marker :
-    L.marker([lat, lng])
-      .addTo(this.#map)
-      .bindPopup(
-        L.popup({
-          maxWidth: 250,
-          minWidth: 100,
-          autoClose: false,
-          closeOnClick: false,
-          className: "running-popup",
-        })
-      )
-      .setPopupContent("othmane")
-      .openPopup();
+    // In this function we used the "this" within,however not a problem in this case because here we call the function as a method of the "this" keyword so its not a callBack function of another function,and therefore the "this" keyword in this method will still be the same current object and so no need to use "bind()"
+    this.renderWorkoutMarker(workout);
 
     //* Render workout on list :
 
@@ -182,6 +174,22 @@ class App {
       inputCadence.value =
       inputElevation.value =
         "";
+  }
+
+  renderWorkoutMarker(workout) {
+    L.marker(workout.coords)
+      .addTo(this.#map)
+      .bindPopup(
+        L.popup({
+          maxWidth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: `${workout.type}-popup`,
+        })
+      )
+      .setPopupContent("othmane")
+      .openPopup();
   }
 }
 
