@@ -324,6 +324,16 @@ class App {
       // this._renderWorkoutMarker(workout);
     });
   }
+
+  reset() {
+    //? this method allows to remove the data from the local storage based on a key passed in the function
+    localStorage.removeItem("workouts");
+
+    // Reloading the page programmatically :
+    location.reload();
+  }
+
+  //? ❗❗ When we convert an object to a string and then back from string to object, we lost the prototype chain wich means all the methods that we recover from the local storage won't be exist in the prototype can't be works.
 }
 
 const app = new App();
