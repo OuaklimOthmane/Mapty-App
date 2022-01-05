@@ -28,9 +28,8 @@ body {
   height: 100vh;
   overscroll-behavior-y: none;
 
-  background-color: #fff;
+  background: linear-gradient(135deg, #cdd0cb, #e8eae6);
   padding: 2.5rem;
-
   display: flex;
 }
 

@@ -73,10 +73,15 @@ class App {
   #workouts = [];
 
   constructor() {
+    //! Get user's position :
     // When a new object is created after the page has loaded,so that means the constructor is also executed immediately when the page is loaded, so therefore is simply getting "_getPosition()" in constructor.
     // so the Load page has triggered the constructor which he then triggers "_getPosition()", so as we receive the position the "_loadMap(position)" will called.
     this._getPosition();
 
+    //! Get Data from local storage :
+    this._getLocalStorage();
+
+    //! Attach event handlers :
     // "this._newWorkout()" is an event handler function has the "this" keyword is pointed to the "form" element and no longer the "app" object, so once again we will use the "bind" solution.
     form.addEventListener("submit", this._newWorkout.bind(this));
 
@@ -111,6 +116,12 @@ class App {
 
     //* Show the form :
     this.#map.on("click", this._showForm.bind(this));
+
+    //* Render workouts in list from the local storage :
+    // Add the marker that we get't from the local storage on map after the map has loaded , else we can't add it before the map is created.
+    this.#workouts.forEach((workout) => {
+      this._renderWorkoutMarker(workout);
+    });
   }
 
   _showForm(mapE) {
@@ -195,6 +206,9 @@ class App {
 
     //* Hide form  :
     this._hideForm();
+
+    //* Setting local storage to all workouts :
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -279,6 +293,35 @@ class App {
       pan: {
         duration: 1,
       },
+    });
+  }
+
+  _setLocalStorage() {
+    //? The localStorage read-only property of the window interface allows you to access a Storage object for the Document's origin; the stored data is saved across browser sessions.
+    //? The keys and the values stored with localStorage should always store in string format, As with objects, integer keys are automatically converted to strings.
+    //? JSON.stringify() allows to convert objects to strings.
+    //* convert object to string :
+    localStorage.setItem("workouts", JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    //? getting the data from local storage by passing the key (the identifier of the item)
+
+    //* convert string to object :
+    const data = JSON.parse(localStorage.getItem("workouts"));
+
+    if (!data) return;
+
+    // keeping mind that "_getLocalStorage()" is gonna executed in the very beginning, and so at that point the "#workouts" array always gonna be empty, but if we have some data in the local storage then we will simply attach this array to "data" that we have before,and so essentially we restore the data across a multiple reloads in the page.
+    this.#workouts = data;
+
+    //* render workouts in list from the local storage :
+    this.#workouts.forEach((workout) => {
+      this._renderWorkoutList(workout);
+
+      //⛔ we know that "_getLocalStorage()" gets executed right at the page loaded, and we try to add a marker to the map, however at this point  the last has actually not yet been loaded , and so essentially we're trying to add a marker to "this.#map" which isn't yet defined at this point so there is some stuffs that have executed such as "_getPosition()" and "_loadMap()" before we actually render a marker on the map, so instead we should have do it once the map has loaded so we can put the method whithin "_loadMap()".
+
+      // this._renderWorkoutMarker(workout);
     });
   }
 }
